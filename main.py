@@ -36,12 +36,18 @@ class Game(object):
                     self.player.goRight()
                 elif event.key == pygame.K_UP:
                     self.player.jump()
+                elif event.key == pygame.K_DOWN:
+                    self.player.goDown()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and self.player.changeX < 0:
                     self.player.stop()
                 elif event.key == pygame.K_RIGHT and self.player.changeX > 0:
                     self.player.stop()
-            
+                elif event.key == pygame.K_UP and self.player.changeY != 0:
+                    self.player.changeY = 0
+                elif event.key == pygame.K_DOWN and self.player.changeY != 0:
+                    self.player.changeY = 0
+        
         return False
         
     def runLogic(self):
@@ -157,15 +163,15 @@ class Player(pygame.sprite.Sprite):
         #If there are not tiles in that list
         else:
             #Update player change for jumping/falling and player frame
-            self.changeY += 0.2
-            if self.changeY > 0:
+            #self.changeY += 0.2
+            if self.changeY >= 0:
                 if self.direction == "right":
                     self.image = self.jumpingRight[1]
                 else:
                     self.image = self.jumpingLeft[1]
         
         #If player is on ground and running, update running animation
-        if self.running and self.changeY == 1:
+        if self.running:
             if self.direction == "right":
                 self.image = self.runningRight[self.runningFrame]
             else:
@@ -182,11 +188,11 @@ class Player(pygame.sprite.Sprite):
     #Make player jump
     def jump(self):
         #Check if player is on ground
-        self.rect.y += 2
-        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[MAP_COLLISION_LAYER].tiles, False)
-        self.rect.y -= 2
+##        self.rect.y += 2
+##        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[MAP_COLLISION_LAYER].tiles, False)
+##        self.rect.y -= 2
         
-        if len(tileHitList) > 0:
+        if True:
             if self.direction == "right":
                 self.image = self.jumpingRight[0]
             else:
@@ -194,6 +200,15 @@ class Player(pygame.sprite.Sprite):
                 
             self.changeY = -6
     
+
+    #Make player go down
+    def goDown(self):
+        if self.direction == "right":
+            self.image = self.jumpingRight[0]
+        else:
+            self.image = self.jumpingLeft[0]
+        self.changeY = 6
+
     #Move right
     def goRight(self):
         self.direction = "right"
