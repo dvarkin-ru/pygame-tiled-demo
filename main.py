@@ -7,7 +7,9 @@ SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 480
 
 #Tiled map layer of tiles that you collide with
+# BACKGROUND_LAYER = 0
 MAP_COLLISION_LAYER = 1
+OBJECTS_LAYER = 2
 
 class Game(object):
     def __init__(self):
@@ -15,6 +17,7 @@ class Game(object):
         self.currentLevelNumber = 0
         self.levels = []
         self.levels.append(Level(fileName = "resources/level1.tmx"))
+        self.levels.append(Level(fileName = "resources/level2.tmx"))
         self.currentLevel = self.levels[self.currentLevelNumber]
         
         #Create a player object and set the level it is in
@@ -38,6 +41,10 @@ class Game(object):
                     self.player.jump()
                 elif event.key == pygame.K_DOWN:
                     self.player.goDown()
+                elif event.key == pygame.K_e:
+                    self.currentLevelNumber = 1
+                    self.currentLevel = self.levels[self.currentLevelNumber]
+                    self.player.currentLevel = self.currentLevel
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and self.player.changeX < 0:
                     self.player.stop()
@@ -53,6 +60,14 @@ class Game(object):
     def runLogic(self):
         #Update player movement and collision logic
         self.player.update()
+        # Teleportation
+        o = self.currentLevel.mapObject.objects_by_name.get("tpt")
+        if o:
+            if self.player.rect.colliderect(pygame.Rect(o.x, o.y, o.width, o.height)):
+                print("Teleport!")
+                self.currentLevelNumber += 1
+                self.currentLevel = self.levels[self.currentLevelNumber]
+                self.player.currentLevel = self.currentLevel
     
     #Draw level, player, overlay
     def draw(self, screen):
@@ -243,7 +258,8 @@ class Level(object):
         
         #Create layers for each layer in tile map
         for layer in range(len(self.mapObject.layers)):
-            self.layers.append(Layer(index = layer, mapObject = self.mapObject))
+            if layer != OBJECTS_LAYER:
+                self.layers.append(Layer(index = layer, mapObject = self.mapObject))
     
     #Move layer left/right
     def shiftLevel(self, shiftX):
@@ -252,6 +268,8 @@ class Level(object):
         for layer in self.layers:
             for tile in layer.tiles:
                 tile.rect.x += shiftX
+        for o in self.mapObject.objects_by_name.values():
+            o.x += shiftX
     
     #Update layer
     def draw(self, screen):
