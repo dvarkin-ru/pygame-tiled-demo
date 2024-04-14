@@ -6,11 +6,6 @@ BACKGROUND = (20, 20, 20)
 SCREEN_WIDTH = 720
 SCREEN_HEIGHT = 480
 
-#Tiled map layer of tiles that you collide with
-# BACKGROUND_LAYER = 0
-MAP_COLLISION_LAYER = 1
-OBJECTS_LAYER = 2
-
 class Game(object):
     def __init__(self):
         #Set up a level to load
@@ -133,7 +128,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.changeX
         
         #Get tiles in collision layer that player is now touching
-        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[MAP_COLLISION_LAYER].tiles, False)
+        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[self.currentLevel.collision_layer].tiles, False)
         
         #Move player to correct side of that block
         for tile in tileHitList:
@@ -158,7 +153,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.changeY
         
         #Get tiles in collision layer that player is now touching
-        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[MAP_COLLISION_LAYER].tiles, False)
+        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[self.currentLevel.collision_layer].tiles, False)
        
         #If there are tiles in that list
         if len(tileHitList) > 0:
@@ -204,7 +199,7 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         #Check if player is on ground
 ##        self.rect.y += 2
-##        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[MAP_COLLISION_LAYER].tiles, False)
+##        tileHitList = pygame.sprite.spritecollide(self, self.currentLevel.layers[self.currentLevel.collision_layer].tiles, False)
 ##        self.rect.y -= 2
         
         if True:
@@ -252,14 +247,16 @@ class Level(object):
         
         #Create list of layers for map
         self.layers = []
+        self.collision_layer = None
         
         #Amount of level shift left/right
         self.levelShift = 0
         
         #Create layers for each layer in tile map
-        for layer in range(len(self.mapObject.layers)):
-            if layer != OBJECTS_LAYER:
-                self.layers.append(Layer(index = layer, mapObject = self.mapObject))
+        for layer in self.mapObject.visible_tile_layers:
+            self.layers.append(Layer(index = layer, mapObject = self.mapObject))
+            if self.mapObject.layers[layer].name == "collision":
+                self.collision_layer = layer
     
     #Move layer left/right
     def shiftLevel(self, shiftX):
